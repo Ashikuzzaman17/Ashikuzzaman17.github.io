@@ -344,13 +344,13 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
 
 <script src="roadmap.js"></script>
 <script src="roadmap-pro.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-/* ---------- Online accounts (optional) ----------
-   Supabase-এর Project URL আর anon key বসালে যেকোনো ডিভাইস থেকে লগইন করা যাবে।
-   খালি রাখলে লোকাল মোড: অ্যাকাউন্ট আর প্রগ্রেস শুধু ওই ব্রাউজারে থাকবে। সেটআপ README.md-তে আছে। */
+/* ---------- Online accounts ----------
+   Supabase-এর Project URL আর publishable/anon key বসালে যে কেউ যেকোনো ডিভাইস থেকে
+   অ্যাকাউন্ট খুলে লগইন করতে পারবে। ডাটাবেস সেটআপ: schema.sql (নিয়ম README.md-তে)।
+   খালি রাখলে লোকাল মোড: অ্যাকাউন্ট শুধু ওই ব্রাউজারে থাকবে। */
 const SUPABASE_URL="";
-const SUPABASE_ANON_KEY="";
+const SUPABASE_KEY="";
 
 /* ---------- Data ---------- */
 const bnNumEarly=n=>String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
@@ -571,72 +571,87 @@ $("prevM").addEventListener("click",()=>{const[y,m]=viewMonth.split("-").map(Num
 $("nextM").addEventListener("click",()=>{const[y,m]=viewMonth.split("-").map(Number);const d=new Date(y,m,1);viewMonth=d.getFullYear()+"-"+pad(d.getMonth()+1);render();});
 
 /* ---------- Accounts ---------- */
-const ONLINE=!!(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase);
-const sb=ONLINE?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
-const EMAIL_DOMAIN="@hacklog.example.com",USER_RE=/^[a-z0-9_]{3,20}$/;
-let authMode="login";
+const ONLINE=!!(SUPABASE_URL&&SUPABASE_KEY);
+const USER_RE=/^[a-z0-9_]{3,20}$/;
+let authMode="login",token=null;
 const lget=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}};
 const lset=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+/* Call one of the database functions in schema.sql. Throws Error(code) on failure. */
+async function rpc(fn,args){
+  let r;
+  try{r=await fetch(SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(args)});}
+  catch(e){throw new Error("network");}
+  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null;}catch(e){}
+  if(!r.ok)throw new Error((j&&j.message)||("http_"+r.status));
+  return j;
+}
+const ERR={username_taken:"এই ইউজারনেম আগেই নেওয়া। অন্যটা দাও, বা লগইন ট্যাবে গিয়ে লগইন করো।",invalid_login:"ইউজারনেম বা পাসওয়ার্ড ভুল।",bad_username:"ইউজারনেম ৩-২০ অক্ষরের হবে। শুধু ছোট হাতের ইংরেজি অক্ষর, সংখ্যা আর _ চলবে।",bad_password:"পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে।",network:"ইন্টারনেট কানেকশন পাওয়া যাচ্ছে না। নেট চেক করে আবার চেষ্টা করো।"};
+const errText=e=>ERR[e.message]||"সার্ভারে সমস্যা হয়েছে, একটু পরে আবার চেষ্টা করো।";
 function showApp(on){$("auth").hidden=on;$("app").hidden=!on;}
 function authMsg(t){$("authMsg").textContent=t;}
 function setTab(m){authMode=m;$("tabLogin").setAttribute("aria-selected",String(m==="login"));$("tabSignup").setAttribute("aria-selected",String(m==="signup"));$("authBtn").textContent=m==="login"?"লগইন":"অ্যাকাউন্ট খোলো";$("uPass").setAttribute("autocomplete",m==="login"?"current-password":"new-password");authMsg("");}
 $("tabLogin").onclick=()=>setTab("login");$("tabSignup").onclick=()=>setTab("signup");
-$("modeNote").textContent=ONLINE?"অনলাইন অ্যাকাউন্ট: যেকোনো ডিভাইস থেকে লগইন করে নিজের প্রগ্রেস দেখতে পারবে।":"এই ব্রাউজারে অ্যাকাউন্ট আর প্রগ্রেস সেভ থাকে। অন্য ডিভাইসে গেলে নতুন করে শুরু করতে হবে।";
+$("modeNote").textContent=ONLINE?"যেকোনো ফোন বা কম্পিউটার থেকে একই ইউজারনেম আর পাসওয়ার্ড দিয়ে লগইন করে নিজের প্রগ্রেস দেখতে পারবে। প্রথমবার হলে \"নতুন অ্যাকাউন্ট\" ট্যাবে যাও।":"এই ব্রাউজারে অ্যাকাউন্ট আর প্রগ্রেস সেভ থাকে। অন্য ডিভাইসে গেলে নতুন করে শুরু করতে হবে।";
 
-async function afterLogin(username,userId){
+function enterApp(username,st){
   LS="cubra-hacklog-v3:"+username;
-  state=Object.assign(freshState(),lget(LS,{}));
-  selected=null;viewMonth=null;peek=false;dbRef=null;lastSaved="";
+  state=Object.assign(freshState(),st||lget(LS,{}));
+  lset(LS,state);lastSaved=ONLINE?JSON.stringify(state):"";
+  selected=null;viewMonth=null;peek=false;
   $("whoName").textContent=username;showApp(true);route();
   if(ONLINE){
-    setSync("লোড হচ্ছে…");
-    const {data,error}=await sb.from("progress").select("state").eq("user_id",userId).maybeSingle();
-    if(error){setSync("সার্ভারে কানেক্ট হয়নি, এই ব্রাউজারে সেভ আছে");return;}
-    if(data&&data.state){state=Object.assign(freshState(),data.state);lset(LS,state);lastSaved=JSON.stringify(state);render();}
-    dbRef={set:async obj=>{const {error}=await sb.from("progress").upsert({user_id:userId,username,state:obj,updated_at:new Date().toISOString()});if(error)throw error;}};
-    if(!data)saveRemote();
+    dbRef={set:obj=>rpc("hl_save",{p_token:token,p_state:obj}).catch(e=>{if(e.message==="invalid_session")forceLogout();throw e;})};
     setSync("অনলাইনে সেভ হচ্ছে · যেকোনো ডিভাইস থেকে লগইন করে দেখতে পারবে");
-  }else setSync("এই ব্রাউজারে সেভ হচ্ছে");
+  }else{dbRef=null;setSync("এই ব্রাউজারে সেভ হচ্ছে");}
 }
+function forceLogout(){token=null;lset("hacklog-token",null);LS=null;dbRef=null;state=freshState();showApp(false);setTab("login");authMsg("সেশন শেষ হয়ে গেছে, আবার লগইন করো।");}
+
 $("authForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const u=$("uName").value.trim().toLowerCase(),p=$("uPass").value;
-  if(!USER_RE.test(u))return authMsg("ইউজারনেম ৩-২০ অক্ষরের হবে। শুধু ছোট হাতের ইংরেজি অক্ষর, সংখ্যা আর _ চলবে।");
-  if(p.length<6)return authMsg("পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে।");
-  $("authBtn").disabled=true;authMsg("");
+  if(!USER_RE.test(u))return authMsg(ERR.bad_username);
+  if(p.length<6)return authMsg(ERR.bad_password);
+  $("authBtn").disabled=true;authMsg(ONLINE?"অপেক্ষা করো…":"");
   try{
     if(ONLINE){
-      const email=u+EMAIL_DOMAIN;
+      let res;
       if(authMode==="signup"){
-        const {data,error}=await sb.auth.signUp({email,password:p,options:{data:{username:u}}});
-        if(error)return authMsg(/registered|exists/i.test(error.message)?"এই ইউজারনেম আগেই নেওয়া। অন্যটা দাও, বা লগইন করো।":"অ্যাকাউন্ট খোলা যায়নি: "+error.message);
-        if(!data.session)return authMsg("অ্যাকাউন্ট তৈরি হয়েছে কিন্তু লগইন হয়নি। Supabase-এ Confirm email বন্ধ আছে কিনা দেখো।");
-        await afterLogin(u,data.user.id);
-      }else{
-        const {data,error}=await sb.auth.signInWithPassword({email,password:p});
-        if(error)return authMsg("ইউজারনেম বা পাসওয়ার্ড ভুল।");
-        await afterLogin(u,data.user.id);
-      }
+        const local=lget("cubra-hacklog-v3:"+u,null); /* carry over progress made earlier in this browser */
+        res=await rpc("hl_signup",{p_username:u,p_password:p,p_state:local&&typeof local==="object"?local:{}});
+      }else res=await rpc("hl_login",{p_username:u,p_password:p});
+      token=res.token;lset("hacklog-token",token);authMsg("");
+      enterApp(res.username,res.state);
     }else{
       const users=lget("hacklog-users",{});
       if(authMode==="signup"){
         if(users[u])return authMsg("এই ইউজারনেম আগেই নেওয়া। অন্যটা দাও, বা লগইন করো।");
         const salt=crypto.getRandomValues(new Uint32Array(4)).join("-");users[u]={salt,hash:await sha(salt+p)};lset("hacklog-users",users);
-      }else if(!users[u]||users[u].hash!==await sha(users[u].salt+p))return authMsg("ইউজারনেম বা পাসওয়ার্ড ভুল।");
-      lset("hacklog-session",u);await afterLogin(u,u);
+      }else if(!users[u]||users[u].hash!==await sha(users[u].salt+p))return authMsg(ERR.invalid_login);
+      lset("hacklog-session",u);enterApp(u,null);
     }
     $("uPass").value="";
-  }finally{$("authBtn").disabled=false;}
+  }catch(err){authMsg(errText(err));}
+  finally{$("authBtn").disabled=false;}
 });
 $("logoutBtn").addEventListener("click",async()=>{
-  clearTimeout(saveTimer);if(dbRef)await saveRemote();
-  if(ONLINE)await sb.auth.signOut();else lset("hacklog-session",null);
+  clearTimeout(saveTimer);
+  if(ONLINE){try{if(dbRef)await saveRemote();if(token)await rpc("hl_logout",{p_token:token});}catch(e){}token=null;lset("hacklog-token",null);}
+  else lset("hacklog-session",null);
   LS=null;dbRef=null;state=freshState();showApp(false);setTab("login");
 });
 (async()=>{
-  if(ONLINE){const {data}=await sb.auth.getSession();const s=data.session;if(s){const u=(s.user.user_metadata&&s.user.user_metadata.username)||s.user.email.split("@")[0];return afterLogin(u,s.user.id);}}
-  else{const u=lget("hacklog-session",null);if(u&&lget("hacklog-users",{})[u])return afterLogin(u,u);}
+  if(ONLINE){
+    const t=lget("hacklog-token",null);
+    if(t){
+      token=t;
+      try{const res=await rpc("hl_get",{p_token:t});return enterApp(res.username,res.state);}
+      catch(e){
+        if(e.message==="invalid_session"){token=null;lset("hacklog-token",null);}
+        else{showApp(false);return authMsg(errText(e));}
+      }
+    }
+  }else{const u=lget("hacklog-session",null);if(u&&lget("hacklog-users",{})[u])return enterApp(u,null);}
   showApp(false);
 })();
 </script>
