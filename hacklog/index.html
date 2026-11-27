@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>CuBra Hack Log</title>
-<meta name="description" content="শূন্য থেকে বিগিনার: ফ্রি, প্র্যাকটিক্যাল আর বৈধ সাইবার সিকিউরিটি রোডম্যাপ।">
+<meta name="description" content="শূন্য থেকে প্রফেশনাল: ফ্রি, প্র্যাকটিক্যাল আর বৈধ সাইবার সিকিউরিটি রোডম্যাপ।">
 <link rel="icon" href="../logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -188,6 +188,11 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
 .dl.done{background:var(--ok-soft);border-color:transparent}
 .dl.cur{border-color:var(--info);box-shadow:inset 0 0 0 1px var(--info)}
 
+.stagehead{display:flex;flex-direction:column;gap:4px;padding:18px 0 4px;margin-top:8px;border-top:2px solid var(--line)}
+.stagehead:first-child{border-top:0;margin-top:0;padding-top:0}
+.stagehead .mono{color:var(--accent);font-size:12px;letter-spacing:.1em}
+.stagehead h2{font-size:24px}
+.stagehead p{margin:0;color:var(--muted);max-width:75ch}
 /* Glossary */
 .gsearch{max-width:420px}
 .glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
@@ -243,9 +248,9 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
     <div class="authintro">
       <div class="eyebrow">Free · Practical · Legal</div>
       <h1>CuBra Hack Log</h1>
-      <p>একদম শূন্য থেকে বিগিনার পর্যন্ত ৫৭ দিনের সাইবার সিকিউরিটি রোডম্যাপ। প্রতিদিনের কাজ, প্রতিটা কাজের সহজ ব্যাখ্যা, আর সব প্র্যাকটিস ফ্রি ও বৈধ ল্যাবে।</p>
+      <p>একদম শূন্য থেকে প্রফেশনাল পর্যন্ত, তিন স্টেজে <span class="nSessions"></span>টা সেশনের সাইবার সিকিউরিটি রোডম্যাপ। প্রতিদিনের কাজ, প্রতিটা কাজের সহজ ব্যাখ্যা, আর সব প্র্যাকটিস ফ্রি ও বৈধ ল্যাবে।</p>
       <div class="feats">
-        <div><svg><use href="#i-list"/></svg><span>৮টা ফেজ: ইন্টারনেটের বেসিক থেকে bug bounty পর্যন্ত</span></div>
+        <div><svg><use href="#i-list"/></svg><span>বিগিনার → ইন্টারমিডিয়েট → প্রফেশনাল: ইন্টারনেটের বেসিক থেকে AD, ক্লাউড, সার্টিফিকেশন আর ক্যারিয়ার পর্যন্ত</span></div>
         <div><svg><use href="#i-cal"/></svg><span>যেদিন শুরু করবে সেদিন Day 1, মিস করলে বাকি কাজ সামনে সরে যাবে</span></div>
         <div><svg><use href="#i-book"/></svg><span>প্রতিটা কাজের পাশে "কী হচ্ছে" ব্যাখ্যা আর শব্দকোষ</span></div>
         <div><svg><use href="#i-lock"/></svg><span>নিজের ইউজারনেম আর পাসওয়ার্ড, প্রত্যেকের প্রগ্রেস আলাদা</span></div>
@@ -271,7 +276,7 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
 <div id="app" hidden>
   <header class="topbar gutter">
     <div class="container">
-      <a class="brand" href="#today"><span class="mark"><svg><use href="#i-shield"/></svg></span><span><b>Hack Log</b><small>ZERO → BEGINNER</small></span></a>
+      <a class="brand" href="#today"><span class="mark"><svg><use href="#i-shield"/></svg></span><span><b>Hack Log</b><small>ZERO → PROFESSIONAL</small></span></a>
       <nav class="tabs" aria-label="পেজ">
         <a href="#today" data-v="today">আজকের কাজ</a>
         <a href="#roadmap" data-v="roadmap">রোডম্যাপ</a>
@@ -290,7 +295,7 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
           <aside class="rail">
             <div class="card">
               <div class="stats">
-                <div><b id="sDays">0/57</b><span>দিন শেষ</span></div>
+                <div><b id="sDays">0</b><span>সেশন শেষ</span></div>
                 <div><b id="sTasks">0%</b><span>কাজ শেষ</span></div>
                 <div><b id="sEta">—</b><span>শেষ হবে</span></div>
               </div>
@@ -311,7 +316,7 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
       </section>
 
       <section class="view" id="v-roadmap" hidden>
-        <div class="pagehead"><div class="eyebrow">৮ ফেজ · ৫৭ দিন</div><h1>পুরো রোডম্যাপ</h1><p>উপর থেকে নিচে ক্রমানুসারে সাজানো। যেকোনো দিনে ক্লিক করলে সেই দিনের কাজ খুলবে।</p></div>
+        <div class="pagehead"><div class="eyebrow" id="rmCount"></div><h1>পুরো রোডম্যাপ</h1><p>তিনটা স্টেজ, উপর থেকে নিচে ক্রমানুসারে। Stage 1-এ ভিত্তি, Stage 2-এ জুনিয়র পেনটেস্টারের দক্ষতা, আর Stage 3-এ প্রফেশনাল লেভেল ও ক্যারিয়ার। যেকোনো সেশনে ক্লিক করলে সেটা খুলবে।</p></div>
         <div class="timeline" id="timeline"></div>
       </section>
 
@@ -327,7 +332,8 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
           <div class="card warn"><h3>সবচেয়ে জরুরি নিয়ম</h3><p>শুধু এই তিন জায়গায় টেস্ট করবে:</p><ul><li>রোডম্যাপে দেওয়া প্র্যাকটিস প্ল্যাটফর্ম (PortSwigger, OverTheWire, picoCTF, pwn.college, Hacker101)</li><li>নিজের পিসিতে চালানো Juice Shop</li><li>bug bounty প্রোগ্রামের লেখা scope-এর ভেতরে, তাদের নিয়ম মেনে</li></ul><p style="margin-top:8px">অনুমতি ছাড়া কারো সাইট বা সিস্টেমে টেস্ট করা বাংলাদেশসহ প্রায় সব দেশে অপরাধ।</p></div>
           <div class="card"><h3>সাইটটা কীভাবে চলে</h3><ul><li>"শুরু করো" চাপলে সেদিন Day 1।</li><li>প্রতিদিন "আজকের কাজ"-এ সেদিনের কাজ আসবে। কাজ শেষ হলে টিক দাও।</li><li>দিনের সব কাজে টিক দিলে দিনটা ✓ হবে, আর পরের দিনের কাজ পরের তারিখে চলে যাবে।</li><li>কোনো দিন কাজ না করলে কিছু হারাবে না। বাকি দিনগুলো নিজে থেকে সামনে সরে যাবে।</li><li>চাইলে ছুটির দিন বেছে নিতে পারো, সেদিন কোনো কাজ বসবে না।</li></ul></div>
           <div class="card"><h3>কী কী লাগবে</h3><ul><li>একটা পিসি বা ল্যাপটপ। ৮ GB RAM হলে ভালো, ৪ GB-তেও শুরু করা যায়।</li><li>ইন্টারনেট সংযোগ</li><li>ফ্রি অ্যাকাউন্ট: PortSwigger, picoCTF, pwn.college, HackerOne</li><li>একটা নোট রাখার জায়গা</li><li>দিনে ১.৫ থেকে ২ ঘণ্টা সময়</li></ul><p style="margin-top:8px">সব টুল আর প্ল্যাটফর্ম ফ্রি। কোথাও টাকা লাগবে না।</p></div>
-          <div class="card"><h3>প্রতিটা দিন কীভাবে পড়বে</h3><ul><li><b>কেন শিখছ</b>: আজকের বিষয় কেন দরকার।</li><li><b>আজকের কাজ</b>: প্রতিটা কাজের নিচে "কী হচ্ছে" ব্যাখ্যা আর সরাসরি লিংক।</li><li><b>শব্দকোষ</b>: আজকের নতুন শব্দগুলোর মানে।</li><li><b>কীভাবে ঠেকানো হয়</b>: দুর্বলতার দিনগুলোতে থাকে। ডেভেলপাররা সমস্যাটা কীভাবে ঠিক করে, সেটা জানা ইন্টারভিউ আর রিপোর্ট দুই জায়গায় কাজে লাগে।</li></ul></div>
+          <div class="card"><h3>কতদিন লাগবে, সত্যি কথা</h3><p>প্রতিটা সেশনের উপরে আনুমানিক সময় লেখা আছে, আর ক্যালেন্ডার সেই হিসাবেই কাজ বসায়। প্রতিদিন ২ ঘণ্টা করে কাজ ধরলে:</p><ul><li><b>Stage 1 · বিগিনার</b>: প্রায় ২ মাস</li><li><b>Stage 2 · ইন্টারমিডিয়েট</b>: প্রায় ৩ মাস</li><li><b>Stage 3 · প্রফেশনাল</b>: প্রায় ৪-৫ মাস</li></ul><p style="margin-top:8px">ক্যালেন্ডারের হিসাবে মোট ৯ মাসের মতো। তবে বাস্তবে বেশিরভাগ মানুষের ১২-১৮ মাস লাগে, কারণ মাঝে পরীক্ষা, ছুটি আর আটকে যাওয়ার দিন আসে। এটা স্বাভাবিক। কোনো সেশন সময়ে শেষ না হলে পরের দিনও সেটাই দেখাবে, আর বাকিগুলো নিজে থেকে সামনে সরে যাবে।</p></div>
+          <div class="card"><h3>প্রতিটা সেশন কীভাবে পড়বে</h3><ul><li><b>কেন শিখছ</b>: আজকের বিষয় কেন দরকার।</li><li><b>আজকের কাজ</b>: প্রতিটা কাজের নিচে "কী হচ্ছে" ব্যাখ্যা আর সরাসরি লিংক।</li><li><b>শব্দকোষ</b>: আজকের নতুন শব্দগুলোর মানে।</li><li><b>কীভাবে ঠেকানো হয়</b>: দুর্বলতার দিনগুলোতে থাকে। ডেভেলপাররা সমস্যাটা কীভাবে ঠিক করে, সেটা জানা ইন্টারভিউ আর রিপোর্ট দুই জায়গায় কাজে লাগে।</li></ul></div>
           <div class="card"><h3>আটকে গেলে কী করবে</h3><ul><li>আগে ২০ মিনিট নিজে চেষ্টা করো, আর যা দেখছ নোটে লিখো।</li><li>Error message বা কমান্ডের নাম গুগল করো।</li><li>PortSwigger-এর প্রতিটা ল্যাবের নিচে অফিশিয়াল Solution আছে, সেটা দেখো।</li><li>Solution দেখার পর কেন কাজ করল, নিজের ভাষায় নোটে লিখো।</li><li>একদিনে না হলে পরদিন আবার চেষ্টা করো। এটা স্বাভাবিক।</li></ul></div>
           <div class="card"><h3>শুধু ফোন থাকলে</h3><p>ফোন থেকে পড়ার অংশগুলো (কেন শিখছ, টপিক পেজ, শব্দকোষ) করা যায়, আর টিক দিয়ে প্রগ্রেসও রাখা যায়। কিন্তু Kali, Burp Suite আর বেশিরভাগ ল্যাবের জন্য পিসি লাগবে। ফোনের দিনগুলোতে পড়া এগিয়ে রাখো, পিসি পেলে হাতে-কলমের কাজ করো।</p></div>
         </div>
@@ -337,6 +343,7 @@ input[type=date],input[type=search],input[type=text],input[type=password]{font:i
 </div>
 
 <script src="roadmap.js"></script>
+<script src="roadmap-pro.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 /* ---------- Online accounts (optional) ----------
@@ -346,10 +353,14 @@ const SUPABASE_URL="";
 const SUPABASE_ANON_KEY="";
 
 /* ---------- Data ---------- */
+const bnNumEarly=n=>String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
 const HUES=["#7C5CD6","#1F8A70","#C2560C","#C03A5B","#2E6FD0","#B7851A","#5B6B84","#178C9C"];
 const PHASES=window.ROADMAP;
+const STAGES={1:"Stage 1 · বিগিনার",2:"Stage 2 · ইন্টারমিডিয়েট",3:"Stage 3 · প্রফেশনাল"};
+const STAGE_D={1:"ভিত্তি: ইন্টারনেট, Linux, ওয়েবের মূল দুর্বলতা, CTF আর প্রথম bug bounty।",2:"জুনিয়র পেনটেস্টারের দক্ষতা: নেটওয়ার্ক, অটোমেশন, Practitioner ল্যাব, পুরো মেশিন আর Active Directory।",3:"প্রফেশনাল লেভেল: অ্যাডভান্সড ওয়েব, ক্লাউড, মোবাইল, কোড রিভিউ, ব্লু টিম, AI সিকিউরিটি আর ক্যারিয়ার।"};
 const DAYS=[];
 PHASES.forEach((p,pi)=>p.days.forEach((d,di)=>{DAYS.push(Object.assign({},d,{pi,id:"d"+(DAYS.length+1),n:DAYS.length+1}));}));
+document.querySelectorAll(".nSessions").forEach(e=>e.textContent=bnNumEarly(DAYS.length));
 const TOTAL_TASKS=DAYS.reduce((a,d)=>a+d.tasks.length,0);
 
 /* ---------- Dates ---------- */
@@ -371,14 +382,25 @@ const nextStudy=s=>{let c=s;for(let i=0;i<8&&isRest(c);i++)c=addDays(c,1);return
 const doneCount=d=>d.tasks.reduce((a,_,i)=>a+(state.done[d.id+"-"+i]?1:0),0);
 const isDone=d=>!!state.completedOn[d.id];
 const currentDay=()=>DAYS.find(d=>!isDone(d))||null;
+/* Estimated study days per session, from its time label (upper bound of a range). */
+function dur(d){
+  const h=(d.h||"").replace(/[০-৯]/g,c=>"০১২৩৪৫৬৭৮৯".indexOf(c)).replace("এক","1");
+  const m=h.match(/[\d.]+/g)||["1"];const n=parseFloat(m[m.length-1])||1;
+  if(/সপ্তাহ/.test(h))return Math.round(n*7);
+  if(/দিন/.test(h))return Math.max(1,Math.round(n));
+  return 1;
+}
+let SPANS={};
 function schedule(){
-  const t=todayStr(),map={};if(!state.start)return map;
+  const t=todayStr(),map={};SPANS={};if(!state.start)return map;
   let cursor=nextStudy(state.start>t?state.start:t);
   const doneToday=Object.values(state.completedOn).includes(t);let first=true;
   for(const d of DAYS){
-    if(isDone(d)){map[d.id]=state.completedOn[d.id];continue;}
+    if(isDone(d)){map[d.id]=state.completedOn[d.id];SPANS[d.id]=[map[d.id]];continue;}
     if(first&&doneToday&&cursor===t&&doneCount(d)===0)cursor=nextStudy(addDays(t,1));
-    first=false;map[d.id]=cursor;cursor=nextStudy(addDays(cursor,1));
+    first=false;map[d.id]=cursor;const span=[cursor];
+    for(let k=1;k<dur(d);k++){cursor=nextStudy(addDays(cursor,1));span.push(cursor);}
+    SPANS[d.id]=span;cursor=nextStudy(addDays(cursor,1));
   }
   return map;
 }
@@ -408,7 +430,7 @@ function render(){
   if(!selected||!DAYS.find(d=>d.id===selected))selected=cur?cur.id:DAYS[DAYS.length-1].id;
   const dd=DAYS.filter(isDone).length,dt=Object.values(state.done).filter(Boolean).length,pct=Math.round(dt/TOTAL_TASKS*100);
   $("sDays").textContent=dd+"/"+DAYS.length;$("sTasks").textContent=pct+"%";$("sBar").style.width=pct+"%";
-  $("sEta").textContent=state.start?fmtShort(sched[DAYS[DAYS.length-1].id]):"—";
+  const lastSpan=SPANS[DAYS[DAYS.length-1].id]||[];$("sEta").textContent=state.start&&lastSpan.length?parse(lastSpan[lastSpan.length-1]).toLocaleDateString("bn-BD",{month:"short",year:"numeric"}):"—";
   if(!state.start&&!peek)renderWelcome();else renderDay(sched,cur);
   renderCal(sched,cur);renderSettings();
   if(!$("v-roadmap").hidden)renderRoadmap(sched,cur);
@@ -451,7 +473,7 @@ function renderDay(sched,cur){
   const idx=DAYS.indexOf(d);
   const blocks=[
     el("div",{class:"dayhero",style:"--phase:"+hue},
-      el("div",{},el("div",{class:"eyebrow"},"Day "+d.n+" · "+p.k+" "+p.t),el("h1",{},d.t),el("p",{class:"goal"},d.g),
+      el("div",{},el("div",{class:"eyebrow"},"Day "+d.n+" · "+STAGES[p.s||1]+" · "+p.k+" "+p.t),el("h1",{},d.t),el("p",{class:"goal"},d.g),
         el("div",{class:"meta"},pill,el("span",{class:"pill"},"⏱ "+d.h),state.start&&date?el("span",{class:"pill"},fmtLong(date)):null)),ring),
     el("div",{class:"block"},el("h3",{},icon("i-bulb"),"কেন শিখছ"),el("p",{class:"why"},d.why)),
     el("div",{class:"block"},el("h3",{},icon("i-list"),"আজকের কাজ"),list)];
@@ -471,7 +493,7 @@ function renderCal(sched,cur){
   if(!viewMonth)viewMonth=(sched[selected]||t).slice(0,7);
   const [y,m]=viewMonth.split("-").map(Number),first=new Date(y,m-1,1);
   $("mTitle").textContent=first.toLocaleDateString("bn-BD",{month:"long",year:"numeric"});
-  const by={};for(const d of DAYS){const s=sched[d.id];if(s)(by[s]=by[s]||[]).push(d);}
+  const by={};for(const d of DAYS){(SPANS[d.id]||[]).forEach(s=>{(by[s]=by[s]||[]).push(d);});}
   const cal=$("cal");cal.replaceChildren(...BN_DOW.map(w=>el("div",{class:"dow"},w)));
   const sc=new Date(y,m-1,1-first.getDay());
   for(let i=0;i<42;i++){
@@ -492,12 +514,16 @@ function renderSettings(){
 }
 
 function renderRoadmap(sched,cur){
-  $("timeline").replaceChildren(...PHASES.map((p,pi)=>{
-    const ds=DAYS.filter(d=>d.pi===pi),dn=ds.filter(isDone).length,hue=HUES[pi%HUES.length];
-    return el("div",{class:"phase",style:"--phase:"+hue},
+  $("rmCount").textContent="৩ স্টেজ · "+bnNum(PHASES.length)+" ফেজ · "+bnNum(DAYS.length)+" সেশন";
+  let lastStage=0;
+  $("timeline").replaceChildren(...PHASES.flatMap((p,pi)=>{
+    const ds=DAYS.filter(d=>d.pi===pi),dn=ds.filter(isDone).length,hue=HUES[pi%HUES.length],out=[];
+    const st=p.s||1;
+    if(st!==lastStage){lastStage=st;const sd=DAYS.filter(d=>(PHASES[d.pi].s||1)===st);out.push(el("div",{class:"stagehead"},el("span",{class:"mono"},"STAGE "+st),el("h2",{},STAGES[st].split(" · ")[1]),el("p",{},STAGE_D[st]+" "+bnNum(sd.filter(isDone).length)+"/"+bnNum(sd.length)+" সেশন শেষ।")));}
+    out.push(el("div",{class:"phase",style:"--phase:"+hue},
       el("div",{class:"node"},el("b",{},p.k),el("i",{})),
       el("div",{class:"body"},
-        el("div",{class:"ph"},el("h2",{},p.t),el("span",{class:"mono",style:"font-size:12.5px;color:var(--muted)"},dn===ds.length?"✓ সম্পূর্ণ":bnNum(dn)+"/"+bnNum(ds.length)+" দিন")),
+        el("div",{class:"ph"},el("h2",{},p.t),el("span",{class:"mono",style:"font-size:12.5px;color:var(--muted)"},dn===ds.length?"✓ সম্পূর্ণ":bnNum(dn)+"/"+bnNum(ds.length)+" সেশন")),
         el("p",{class:"desc"},p.d),
         el("div",{class:"pbar"},el("i",{style:"width:"+(dn/ds.length*100)+"%"})),
         el("div",{class:"daygrid"},ds.map(d=>{
@@ -505,7 +531,8 @@ function renderRoadmap(sched,cur){
           return el("a",{class:"dl"+st,href:"#day-"+d.n,style:"text-decoration:none;color:inherit"},
             el("div",{class:"top"},el("span",{},"Day "+d.n),el("span",{},isDone(d)?"✓ "+fmtShort(state.completedOn[d.id]):state.start?fmtShort(sched[d.id]):d.h)),
             el("b",{},d.t),el("small",{},doneCount(d)+"/"+d.tasks.length+" কাজ · "+d.g));
-        }))));
+        })))));
+    return out;
   }));
 }
 

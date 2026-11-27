@@ -1,6 +1,6 @@
 # CuBra Hack Log
 
-A 57-day zero-to-beginner cyber security roadmap. Every user logs in with their own username and password and sees only their own progress. `index.html` is the app and `roadmap.js` holds all the day-by-day content, so editing the roadmap means editing only `roadmap.js`.
+A zero-to-professional cyber security roadmap in three stages (119 sessions). Every user logs in with their own username and password and sees only their own progress. `index.html` is the app. `roadmap.js` holds Stage 1 (beginner) and `roadmap-pro.js` holds Stages 2–3 (intermediate and professional), so editing the content means editing only those two files.
 
 ## Two modes
 
