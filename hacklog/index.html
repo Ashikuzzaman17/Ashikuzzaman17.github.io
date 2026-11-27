@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CuBra Hack Log</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: engagement-log tracker — header stats, today's op card + month calendar side by side, full phase roadmap below */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --sunk:#E3E8EF; --line:#CBD3DE;
+  --ink:#122033; --muted:#5A6779; --accent:#B4590F; --accent-ink:#FFFFFF;
+  --ok:#1E7A4C; --ok-soft:#DDF1E6; --today:#2457A6; --today-soft:#DCE7F8;
+  --f-display:"Space Grotesk","Hind Siliguri",system-ui,sans-serif;
+  --f-body:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1620; --surface:#17212E; --sunk:#1F2B3A; --line:#2D3B4E;
+  --ink:#E6ECF3; --muted:#93A1B4; --accent:#F0974A; --accent-ink:#1A0F05;
+  --ok:#52C58A; --ok-soft:#173527; --today:#7AA7EE; --today-soft:#1C2E4A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1620; --surface:#17212E; --sunk:#1F2B3A; --line:#2D3B4E;
+  --ink:#E6ECF3; --muted:#93A1B4; --accent:#F0974A; --accent-ink:#1A0F05;
+  --ok:#52C58A; --ok-soft:#173527; --today:#7AA7EE; --today-soft:#1C2E4A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.2}
+a{color:var(--today)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--f-mono)}
+
+header.top{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between}
+header.top h1{font-size:28px}
+header.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.stats{display:flex;gap:22px;flex-wrap:wrap}
+.stat b{display:block;font-family:var(--f-mono);font-size:20px;font-variant-numeric:tabular-nums}
+.bar{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .4s}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+
+/* Day card */
+.dayhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.dayhead h2{font-size:22px;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.today{background:var(--today-soft);color:var(--today);border-color:transparent}
+.chip.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.goal{margin:10px 0 14px;color:var(--muted)}
+.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.task{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.task.checked{background:var(--ok-soft);border-color:transparent}
+.task.checked .ttext{text-decoration:line-through;text-decoration-color:var(--ok);color:var(--muted)}
+.cb{width:24px;height:24px;border-radius:6px;border:2px solid var(--muted);background:var(--surface);display:grid;place-items:center;padding:0;flex:none}
+.task.checked .cb{background:var(--ok);border-color:var(--ok)}
+.cb svg{width:14px;height:14px;opacity:0}
+.task.checked .cb svg{opacity:1}
+.ttext{min-width:0}
+.ttext .tid{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-right:6px}
+.ttext a.go{display:inline-flex;gap:4px;align-items:center;margin-top:4px;font-size:13px;font-family:var(--f-mono);word-break:break-all}
+.ttext code{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);padding:1px 5px;border-radius:4px;word-break:break-all}
+.dayfoot{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:16px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:7px;font-size:14px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* Calendar */
+.calhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.calhead h3{font-size:17px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.dow{text-align:center;font-size:11px;color:var(--muted);font-family:var(--f-mono);padding-bottom:4px}
+.cell{min-height:54px;border-radius:6px;background:var(--bg);border:1px solid transparent;padding:4px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;font-size:12px}
+.cell.out{opacity:.35}
+.cell .n{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.cell.rest{background:repeating-linear-gradient(135deg,var(--bg) 0 5px,var(--sunk) 5px 7px)}
+.cell.isToday{border-color:var(--today)}
+.cell.sel{outline:2px solid var(--accent);outline-offset:-2px}
+.dtag{font-family:var(--f-mono);font-size:10.5px;padding:1px 5px;border-radius:4px;background:var(--sunk);color:var(--ink);white-space:nowrap}
+.dtag.done{background:var(--ok);color:var(--surface)}
+.dtag.cur{background:var(--today);color:var(--surface)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+.settings{display:flex;flex-direction:column;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.settings label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.settings input[type=date]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.restdays{display:flex;gap:6px;flex-wrap:wrap}
+.restdays button{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:4px 9px;font-size:13px}
+.restdays button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.sync{font-size:12px;color:var(--muted)}
+
+/* Roadmap */
+.phases{display:flex;flex-direction:column;gap:12px}
+details.phase{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+details.phase summary{list-style:none;cursor:pointer;padding:14px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+details.phase summary::-webkit-details-marker{display:none}
+.pnum{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:600}
+.pt h3{font-size:16px}
+.pt p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.pprog{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.daylist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;padding:0 18px 18px}
+.dl{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);text-align:left;display:flex;flex-direction:column;gap:3px}
+.dl .top{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.dl b{font-weight:600;font-size:14px}
+.dl.done{background:var(--ok-soft);border-color:transparent}
+.dl.cur{border-color:var(--today)}
+.note{font-size:13px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:14px 18px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-size:14px;max-width:calc(100% - 32px);z-index:20}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+body{margin:0}
+[hidden]{display:none!important}
+.authwrap{min-height:calc(100vh - 68px);display:grid;place-items:center}
+.authcard{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px}
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:8px;margin-bottom:16px}
+.tabs button{flex:1;border:0;background:transparent;padding:7px;border-radius:6px;font-size:14px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);font-weight:600}
+#authForm{display:flex;flex-direction:column;gap:12px}
+#authForm label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+#authForm input{font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.authmsg{font-size:13px;color:var(--accent);min-height:1em}
+.who{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+.who b{color:var(--ink);font-family:var(--f-mono)}
+.linkbtn{border:0;background:none;padding:0;color:var(--today);text-decoration:underline;font-size:13px}
+</style>
+</head>
+<body>
+<div id="auth" class="authwrap" hidden>
+  <div class="authcard">
+    <div class="label">Free · Practical · Legal</div>
+    <h1 style="font-size:28px">CuBra Hack Log</h1>
+    <p style="color:var(--muted);margin:6px 0 18px">৫৩ দিনের প্র্যাকটিক্যাল সাইবার সিকিউরিটি রোডম্যাপ। প্রত্যেকের নিজের অ্যাকাউন্ট, নিজের প্রগ্রেস।</p>
+    <div class="tabs" role="tablist">
+      <button id="tabLogin" role="tab" aria-selected="true">লগইন</button>
+      <button id="tabSignup" role="tab" aria-selected="false">নতুন অ্যাকাউন্ট</button>
+    </div>
+    <form id="authForm" novalidate>
+      <label for="uName">ইউজারনেম<input id="uName" autocomplete="username" placeholder="যেমন: cubra" maxlength="20" required></label>
+      <label for="uPass">পাসওয়ার্ড<input id="uPass" type="password" autocomplete="current-password" placeholder="কমপক্ষে ৬ অক্ষর" required></label>
+      <button class="btn primary" id="authBtn" type="submit" style="width:100%;padding:10px">লগইন</button>
+      <div id="authMsg" class="authmsg" role="alert"></div>
+    </form>
+    <div id="modeNote" class="sync" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<div class="wrap" hidden>
+  <header class="top">
+    <div>
+      <div class="label">Free · Practical · Legal</div>
+      <h1>CuBra Hack Log</h1>
+      <div class="who">ইউজার: <b id="whoName"></b> · <button id="logoutBtn" class="linkbtn" type="button">লগআউট</button></div>
+      <p>৫৩ দিনের সাইবার সিকিউরিটি রোডম্যাপ। যেদিন "শুরু করো" চাপবে সেদিন Day 1। যেদিন কাজ করবে সেদিনের কাজই আসবে, না করলে বাকি কাজ সামনের দিনে সরে যাবে।</p>
+    </div>
+    <div style="min-width:min(100%,320px);display:flex;flex-direction:column;gap:10px">
+      <div class="stats">
+        <div class="stat"><span class="label">দিন শেষ</span><b id="sDays">0/56</b></div>
+        <div class="stat"><span class="label">টাস্ক</span><b id="sTasks">0%</b></div>
+        <div class="stat"><span class="label">শেষ হবে</span><b id="sEta">—</b></div>
+      </div>
+      <div class="bar"><i id="sBar" style="width:0%"></i></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel" id="dayPanel" aria-live="polite"></section>
+    <aside class="panel">
+      <div class="calhead">
+        <button class="btn" id="prevM" aria-label="আগের মাস">‹</button>
+        <h3 id="mTitle"></h3>
+        <button class="btn" id="nextM" aria-label="পরের মাস">›</button>
+      </div>
+      <div class="cal" id="cal"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--ok)"></i>শেষ</span>
+        <span><i class="sw" style="background:var(--today)"></i>চলমান</span>
+        <span><i class="sw" style="background:var(--sunk)"></i>সামনে</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--bg) 0 3px,var(--line) 3px 5px)"></i>ছুটি</span>
+      </div>
+      <div class="settings">
+        <label for="startDate">শুরুর তারিখ<input type="date" id="startDate"></label>
+        <div><div style="font-size:13px;color:var(--muted);margin-bottom:4px">ছুটির দিন (এই দিনে কোনো কাজ বসবে না)</div><div class="restdays" id="restDays"></div></div>
+        <div class="sync" id="sync">প্রগ্রেস লোড হচ্ছে…</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="phases" id="phases"></div>
+
+  <div class="note">শুধু এই সাইটগুলোর ল্যাব, নিজের পিসিতে চালানো Juice Shop, আর bug bounty প্রোগ্রামের scope-এ থাকা টার্গেটেই টেস্ট করবে। অনুমতি ছাড়া কোনো সাইট বা সফটওয়্যারে টেস্ট করা বেআইনি (বাংলাদেশে সাইবার নিরাপত্তা আইনের আওতায় পড়ে)।</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ---------- Curriculum ---------- */
+const PS="https://portswigger.net/web-security/";
+const PHASES=[
+ {t:"Linux ও কমান্ড লাইন",d:"হ্যাকিংয়ের সব টুল টার্মিনালে চলে, তাই প্রথমে এটা পাকা করা",days:[
+  ["ল্যাব সেটআপ","নিজের হ্যাকিং মেশিন রেডি করা",[
+   ["VirtualBox ইনস্টল করো (অথবা Windows-এ WSL দিয়ে Ubuntu)","https://www.virtualbox.org/wiki/Downloads"],
+   ["Kali Linux-এর রেডিমেড VM ইমেজ নামিয়ে VirtualBox-এ ইমপোর্ট করো","https://www.kali.org/get-kali/#kali-virtual-machines"],
+   ["OverTheWire Bandit-এর নিয়ম পড়ো, তারপর Level 0 → 1 (ssh দিয়ে লগইন)","https://overthewire.org/wargames/bandit/bandit0.html"],
+   ["একটা নোট ফাইল খোলো: প্রতিটা লেভেলের কমান্ড আর পাসওয়ার্ড লিখে রাখবে"]]],
+  ["ফাইল খোঁজা","ls, cat, find, file",[
+   ["Bandit Level 1 → 4 (অদ্ভুত নামের ফাইল, hidden ফাইল)","https://overthewire.org/wargames/bandit/bandit2.html"],
+   ["Bandit Level 4 → 7 (file, find -size, find -user)","https://overthewire.org/wargames/bandit/bandit5.html"],
+   ["নিজে টার্মিনালে <code>man find</code> পড়ে ৫টা অপশন ট্রাই করো"]]],
+  ["টেক্সট প্রসেসিং","grep, sort, uniq, base64, tr",[
+   ["Bandit Level 7 → 10","https://overthewire.org/wargames/bandit/bandit8.html"],
+   ["Bandit Level 10 → 13 (base64, ROT13, hexdump/xxd)","https://overthewire.org/wargames/bandit/bandit11.html"],
+   ["নোটে pipe <code>|</code> আর redirect <code>&gt;</code> কীভাবে কাজ করে লিখো"]]],
+  ["SSH ও নেটওয়ার্ক টুল","ssh key, nc, openssl",[
+   ["Bandit Level 13 → 15 (SSH private key, localhost port)","https://overthewire.org/wargames/bandit/bandit14.html"],
+   ["Bandit Level 15 → 17 (openssl s_client, nmap দিয়ে port scan)","https://overthewire.org/wargames/bandit/bandit16.html"],
+   ["Nmap-এর বেসিক অপশন দেখো: -sV, -p-, -sC","https://nmap.org/book/man.html"]]],
+  ["Cron ও স্ক্রিপ্ট","অটোমেশন বোঝা",[
+   ["Bandit Level 17 → 21 (diff, setuid binary)","https://overthewire.org/wargames/bandit/bandit18.html"],
+   ["Bandit Level 21 → 24 (cron job পড়া, নিজের bash script)","https://overthewire.org/wargames/bandit/bandit22.html"],
+   ["একটা ছোট bash লুপ লিখো যেটা ১ থেকে ১০০ পর্যন্ত নম্বর প্রিন্ট করে"]]],
+  ["Bandit শেষ + HTTP","ওয়েব কীভাবে কথা বলে",[
+   ["Bandit Level 24 → 27 (brute force লুপ, git)","https://overthewire.org/wargames/bandit/bandit25.html"],
+   ["MDN-এর HTTP Overview পড়ো: request, response, header, cookie","https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview"],
+   ["HTTP status code (200, 302, 403, 404, 500) মানে নোটে লিখো","https://developer.mozilla.org/en-US/docs/Web/HTTP/Status"]]]
+ ]},
+ {t:"ওয়েব টুলকিট",d:"Burp Suite আর নিজের পিসিতে হ্যাক করার মতো ওয়েবসাইট",days:[
+  ["Burp Suite সেটআপ","সব ওয়েব হ্যাকিংয়ের মূল টুল",[
+   ["Burp Suite Community Edition (ফ্রি) ইনস্টল করো","https://portswigger.net/burp/communitydownload"],
+   ["PortSwigger Web Security Academy-তে ফ্রি অ্যাকাউন্ট খোলো","https://portswigger.net/web-security"],
+   ["Burp-এর Getting started গাইড: Proxy দিয়ে একটা রিকোয়েস্ট ধরো","https://portswigger.net/burp/documentation/desktop/getting-started"]]],
+  ["Repeater ও Intruder","রিকোয়েস্ট বদলে আবার পাঠানো",[
+   ["Burp Repeater দিয়ে একটা রিকোয়েস্টের প্যারামিটার বদলে দেখো","https://portswigger.net/burp/documentation/desktop/tools/repeater"],
+   ["Burp Intruder কীভাবে কাজ করে পড়ো","https://portswigger.net/burp/documentation/desktop/tools/intruder"],
+   ["Docker ইনস্টল করে OWASP Juice Shop চালাও: <code>docker run -d -p 3000:3000 bkimminich/juice-shop</code>","https://owasp.org/www-project-juice-shop/"]]],
+  ["Juice Shop প্রথম হ্যাক","নিজের পিসিতে ইচ্ছামতো হ্যাক",[
+   ["Juice Shop-এর লুকানো Score Board খুঁজে বের করো (প্রথম চ্যালেঞ্জ)","https://pwning.owasp-juice.shop/companion-guide/latest/part1/challenges.html"],
+   ["Burp দিয়ে Juice Shop-এর ট্রাফিক দেখো, কোন API কল হচ্ছে নোট করো"],
+   ["যেকোনো ৩টা ১-স্টার চ্যালেঞ্জ সলভ করো (আটকে গেলে hint দেখো)"]]]
+ ]},
+ {t:"ওয়েব ভালনারেবিলিটি (PortSwigger)",d:"প্রতিটা টপিক পড়ো, তারপর আসল ল্যাবে হ্যাক করো। Apprentice ল্যাব আগে।",days:[
+  ["SQL Injection ১","ডাটাবেস থেকে ডেটা চুরি কীভাবে হয়",[
+   ["SQL injection টপিক পড়ো","https://portswigger.net/web-security/sql-injection"],
+   ["Apprentice ল্যাব: WHERE clause-এ hidden data দেখা","https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data"],
+   ["Apprentice ল্যাব: login bypass","https://portswigger.net/web-security/sql-injection/lab-login-bypass"]]],
+  ["SQL Injection ২","UNION attack",[
+   ["UNION attack টপিক পড়ো",PS+"sql-injection/union-attacks"],
+   ["UNION দিয়ে কলাম সংখ্যা বের করার ল্যাব",PS+"sql-injection/union-attacks/lab-determine-number-of-columns"],
+   ["অন্য টেবিল থেকে username/password বের করার ল্যাব",PS+"sql-injection/union-attacks/lab-retrieve-data-from-other-tables"]]],
+  ["SQL Injection ৩","Blind SQLi",[
+   ["Blind SQL injection টপিক পড়ো",PS+"sql-injection/blind"],
+   ["Conditional responses দিয়ে blind SQLi ল্যাব",PS+"sql-injection/blind/lab-conditional-responses"],
+   ["Juice Shop-এ SQLi দিয়ে admin হিসেবে লগইন করো"]]],
+  ["XSS ১","Reflected ও Stored XSS",[
+   ["Cross-site scripting টপিক পড়ো",PS+"cross-site-scripting"],
+   ["Reflected XSS ল্যাব (HTML context, কিছু encode করা নেই)",PS+"cross-site-scripting/reflected/lab-html-context-nothing-encoded"],
+   ["Stored XSS ল্যাব",PS+"cross-site-scripting/stored/lab-html-context-nothing-encoded"]]],
+  ["XSS ২","DOM XSS",[
+   ["DOM-based XSS টপিক পড়ো",PS+"cross-site-scripting/dom-based"],
+   ["DOM XSS ল্যাব: document.write sink",PS+"cross-site-scripting/dom-based/lab-document-write-sink"],
+   ["DOM XSS ল্যাব: innerHTML sink",PS+"cross-site-scripting/dom-based/lab-innerhtml-sink"]]],
+  ["XSS ৩","Context বুঝে payload",[
+   ["XSS contexts পড়ো (attribute, JavaScript string)",PS+"cross-site-scripting/contexts"],
+   ["Attribute-এ angle bracket encode করা ল্যাব",PS+"cross-site-scripting/contexts/lab-attribute-angle-brackets-html-encoded"],
+   ["Juice Shop-এর DOM XSS আর Reflected XSS চ্যালেঞ্জ করো"]]],
+  ["Authentication ১","পাসওয়ার্ড ও লগইনের দুর্বলতা",[
+   ["Authentication টপিক পড়ো",PS+"authentication"],
+   ["Username enumeration ল্যাব",PS+"authentication/password-based/lab-username-enumeration-via-different-responses"],
+   ["2FA simple bypass ল্যাব",PS+"authentication/multi-factor/lab-2fa-simple-bypass"]]],
+  ["Authentication ২","Password reset ভুল",[
+   ["Password reset broken logic ল্যাব",PS+"authentication/other-mechanisms/lab-password-reset-broken-logic"],
+   ["Burp Intruder দিয়ে ছোট wordlist-এ brute force প্র্যাকটিস করো (শুধু ল্যাবে)"],
+   ["Juice Shop-এর একটা password/login চ্যালেঞ্জ সলভ করো"]]],
+  ["Path Traversal ও Command Injection","সার্ভারের ফাইল ও কমান্ড",[
+   ["Path traversal টপিক + সিম্পল ল্যাব",PS+"file-path-traversal"],
+   ["OS command injection টপিক পড়ো",PS+"os-command-injection"],
+   ["Simple OS command injection ল্যাব",PS+"os-command-injection/lab-simple"]]],
+  ["Access Control ১","IDOR, bug bounty-তে সবচেয়ে কমন",[
+   ["Access control টপিক পড়ো",PS+"access-control"],
+   ["Unprotected admin functionality ল্যাব",PS+"access-control/lab-unprotected-admin-functionality"],
+   ["User ID parameter দিয়ে অন্যের ডেটা দেখা (IDOR) ল্যাব",PS+"access-control/lab-user-id-controlled-by-request-parameter"]]],
+  ["Access Control ২","Role ও IDOR আরও",[
+   ["Insecure direct object references ল্যাব",PS+"access-control/lab-insecure-direct-object-references"],
+   ["User role cookie দিয়ে বদলানো ল্যাব",PS+"access-control/lab-user-role-controlled-by-request-parameter"],
+   ["Juice Shop-এ অন্যের basket দেখার চ্যালেঞ্জ করো"]]],
+  ["Information Disclosure","ভুল করে লিক হওয়া তথ্য",[
+   ["Information disclosure টপিক পড়ো",PS+"information-disclosure"],
+   ["Error message-এ তথ্য লিক ল্যাব",PS+"information-disclosure/exploiting/lab-infoleak-in-error-messages"],
+   ["Backup file-এ source code লিক ল্যাব",PS+"information-disclosure/exploiting/lab-infoleak-via-backup-files"]]],
+  ["Business Logic","অ্যাপের লজিকের ভুল",[
+   ["Business logic vulnerabilities টপিক পড়ো",PS+"logic-flaws"],
+   ["Excessive trust in client-side controls ল্যাব",PS+"logic-flaws/examples/lab-logic-flaws-excessive-trust-in-client-side-controls"],
+   ["High-level logic vulnerability ল্যাব",PS+"logic-flaws/examples/lab-logic-flaws-high-level"]]],
+  ["CSRF","ইউজারের হয়ে অ্যাকশন করানো",[
+   ["CSRF টপিক পড়ো",PS+"csrf"],
+   ["কোনো defense ছাড়া CSRF ল্যাব",PS+"csrf/lab-no-defenses"],
+   ["নোটে লিখো: SameSite cookie কীভাবে CSRF আটকায়",PS+"csrf/bypassing-samesite-restrictions"]]],
+  ["SSRF","সার্ভার দিয়ে ভিতরের নেটওয়ার্কে রিকোয়েস্ট",[
+   ["SSRF টপিক পড়ো",PS+"ssrf"],
+   ["Local server-এর বিরুদ্ধে basic SSRF ল্যাব",PS+"ssrf/lab-basic-ssrf-against-localhost"],
+   ["Backend system-এর বিরুদ্ধে SSRF ল্যাব",PS+"ssrf/lab-basic-ssrf-against-backend-system"]]],
+  ["File Upload","ক্ষতিকর ফাইল আপলোড",[
+   ["File upload vulnerabilities টপিক পড়ো",PS+"file-upload"],
+   ["Web shell upload ল্যাব",PS+"file-upload/lab-file-upload-remote-code-execution-via-web-shell-upload"],
+   ["Content-Type bypass ল্যাব",PS+"file-upload/lab-file-upload-web-shell-upload-via-content-type-restriction-bypass"]]],
+  ["XXE","XML দিয়ে ফাইল পড়া",[
+   ["XXE injection টপিক পড়ো",PS+"xxe"],
+   ["External entity দিয়ে ফাইল পড়ার ল্যাব",PS+"xxe/lab-exploiting-xxe-to-retrieve-files"],
+   ["XXE দিয়ে SSRF ল্যাব",PS+"xxe/lab-exploiting-xxe-to-perform-ssrf"]]],
+  ["SSTI","Template injection",[
+   ["Server-side template injection টপিক পড়ো",PS+"server-side-template-injection"],
+   ["Basic SSTI ল্যাব",PS+"server-side-template-injection/exploiting/lab-server-side-template-injection-basic"],
+   ["নোটে SSTI চেনার payload লিখো: <code>{{7*7}}</code>, <code>${7*7}</code>"]]],
+  ["API Testing","আধুনিক অ্যাপের আসল আক্রমণের জায়গা",[
+   ["API testing টপিক পড়ো",PS+"api-testing"],
+   ["Documentation দিয়ে API exploit ল্যাব",PS+"api-testing/lab-exploiting-api-endpoint-using-documentation"],
+   ["Juice Shop-এর REST API (/api, /rest) Burp দিয়ে ম্যাপ করো"]]],
+  ["JWT","টোকেনের দুর্বলতা",[
+   ["JWT attacks টপিক পড়ো",PS+"jwt"],
+   ["Unverified signature JWT ল্যাব",PS+"jwt/lab-jwt-authentication-bypass-via-unverified-signature"],
+   ["Flawed signature verification ল্যাব",PS+"jwt/lab-jwt-authentication-bypass-via-flawed-signature-verification"]]],
+  ["CORS ও OAuth","ক্রস-অরিজিন আর সোশ্যাল লগইন",[
+   ["CORS টপিক + basic origin reflection ল্যাব",PS+"cors"],
+   ["OAuth authentication টপিক পড়ো",PS+"oauth"],
+   ["OAuth implicit flow bypass ল্যাব",PS+"oauth/lab-oauth-authentication-bypass-via-oauth-implicit-flow"]]],
+  ["রিভিশন দিন","যা শিখলে তা পাকা করা",[
+   ["PortSwigger Dashboard দেখো, যে টপিকে Apprentice বাকি সেগুলো শেষ করো","https://portswigger.net/web-security/dashboard"],
+   ["নিজের একটা cheat sheet বানাও: প্রতিটা ভালনারেবিলিটির ৩টা payload"],
+   ["Juice Shop-এ ২-স্টারের ৫টা চ্যালেঞ্জ সলভ করো"]]]
+ ]},
+ {t:"Recon ও মেথডলজি",d:"আসল টার্গেটে কীভাবে শুরু করতে হয়, ধাপে ধাপে",days:[
+  ["OWASP Testing Guide","পেশাদার টেস্টারদের চেকলিস্ট",[
+   ["OWASP WSTG-এর সূচি পড়ো, কোন কোন ধাপে টেস্ট হয় নোট করো","https://owasp.org/www-project-web-security-testing-guide/"],
+   ["OWASP Top 10 পড়ো, প্রতিটার সাথে তোমার শেখা ল্যাব মিলাও","https://owasp.org/www-project-top-ten/"]]],
+  ["Content Discovery","লুকানো পেজ খোঁজা",[
+   ["ffuf ইনস্টল করো, README পড়ো","https://github.com/ffuf/ffuf"],
+   ["SecLists wordlist নামাও","https://github.com/danielmiessler/SecLists"],
+   ["নিজের Juice Shop-এর বিরুদ্ধে ffuf চালিয়ে লুকানো পাথ খুঁজো (যেমন /ftp)"]]],
+  ["Subdomain Recon","টার্গেটের সব সাবডোমেইন",[
+   ["subfinder ইনস্টল করো","https://github.com/projectdiscovery/subfinder"],
+   ["httpx ইনস্টল করো, কোন সাবডোমেইন লাইভ দেখো","https://github.com/projectdiscovery/httpx"],
+   ["শুধু কোনো bug bounty প্রোগ্রামের in-scope ডোমেইনে প্র্যাকটিস করো, scope লিস্ট আগে পড়বে"]]],
+  ["ফুল টেস্ট: Juice Shop","শুরু থেকে শেষ পর্যন্ত একটা পেনটেস্ট",[
+   ["WSTG মেনে Juice Shop-এ পুরো টেস্ট করো, যা পাও লিখে রাখো"],
+   ["৩-স্টারের অন্তত ৩টা চ্যালেঞ্জ সলভ করো"],
+   ["একটা প্রফেশনাল রিপোর্ট লিখো: Title, Severity, Steps to Reproduce, Impact, Fix"]]]
+ ]},
+ {t:"CTF প্র্যাকটিস",d:"বিভিন্ন ধরনের চ্যালেঞ্জ, মাথা খাটানো আর স্পিড বাড়ানো",days:[
+  ["picoCTF শুরু","ফ্রি CTF প্ল্যাটফর্ম",[
+   ["picoCTF-এ অ্যাকাউন্ট খোলো, picoGym-এ যাও","https://play.picoctf.org/practice"],
+   ["General Skills ক্যাটাগরির ৫টা চ্যালেঞ্জ"],
+   ["প্রতিটা সলভের ছোট writeup নোটে লিখো"]]],
+  ["picoCTF Web","ওয়েব এক্সপ্লয়টেশন",[
+   ["picoGym-এ Web Exploitation-এর ৫টা চ্যালেঞ্জ","https://play.picoctf.org/practice?category=1"],
+   ["Burp দিয়ে করো, শুধু ব্রাউজার না"]]],
+  ["picoCTF Crypto ও Forensics","অন্য ক্যাটাগরি",[
+   ["Cryptography-র ৩টা সহজ চ্যালেঞ্জ","https://play.picoctf.org/practice"],
+   ["Forensics-এর ৩টা সহজ চ্যালেঞ্জ","https://play.picoctf.org/practice"],
+   ["CyberChef ব্যবহার শেখো (encode/decode-এর সুইস নাইফ)","https://gchq.github.io/CyberChef/"]]],
+  ["Hacker101 CTF","HackerOne-এর ফ্রি CTF",[
+   ["Hacker101 CTF-এ অ্যাকাউন্ট খোলো","https://ctf.hacker101.com/"],
+   ["সবচেয়ে সহজ (Trivial/Easy) লেভেলের ২টা ফ্ল্যাগ বের করো"],
+   ["Hacker101 ভিডিও থেকে Web hacking 101 দেখো","https://www.hacker101.com/videos"]]],
+  ["Hacker101 আরও","এখান থেকে HackerOne-এ private invite পাওয়া যায়",[
+   ["Hacker101 CTF-এ আরও ২-৩টা ফ্ল্যাগ"],
+   ["আটকে গেলে hint দেখো, তবে আগে ৩০ মিনিট নিজে চেষ্টা করো"]]]
+ ]},
+ {t:"সফটওয়্যার ভালনারেবিলিটি",d:"প্রোগ্রাম বাইনারির দুর্বলতা: buffer overflow, memory bug",days:[
+  ["C ও মেমরি বেসিক","stack, pointer বোঝা",[
+   ["pwn.college-এ ফ্রি অ্যাকাউন্ট খোলো, dojo লিস্ট দেখো","https://pwn.college/"],
+   ["নিজের Kali-তে একটা ছোট C প্রোগ্রাম লিখে gcc দিয়ে কম্পাইল করো"],
+   ["gdb দিয়ে সেই প্রোগ্রাম চালিয়ে break, run, info registers ট্রাই করো"]]],
+  ["pwn.college শুরু","গাইডেড ফ্রি কোর্স",[
+   ["Getting Started / Linux Luminarium dojo-র প্রথম মডিউল","https://pwn.college/"],
+   ["প্রতিটা চ্যালেঞ্জের পর কী শিখলে নোট করো"]]],
+  ["Buffer Overflow ১","সবচেয়ে ক্লাসিক বাগ",[
+   ["Exploit Education Phoenix সেটআপ করো","https://exploit.education/phoenix/"],
+   ["Phoenix Stack Zero ও Stack One","https://exploit.education/phoenix/stack-zero/"]]],
+  ["Buffer Overflow ২","রিটার্ন অ্যাড্রেস কন্ট্রোল",[
+   ["Phoenix Stack Two থেকে Stack Four","https://exploit.education/phoenix/stack-two/"],
+   ["Nightmare কোর্সের stack overflow অংশ পড়ো","https://guyinatuxedo.github.io/"]]],
+  ["pwn.college Program Security","মেমরি এরর",[
+   ["Intro to Cybersecurity dojo-র memory errors মডিউল শুরু করো","https://pwn.college/"],
+   ["অন্তত ৩টা চ্যালেঞ্জ সলভ করো"]]],
+  ["Ghidra দিয়ে Reverse","সোর্স ছাড়া প্রোগ্রাম বোঝা",[
+   ["Ghidra ইনস্টল করো (NSA-র ফ্রি টুল)","https://github.com/NationalSecurityAgency/ghidra"],
+   ["picoCTF-এর Reverse Engineering ক্যাটাগরির ২টা চ্যালেঞ্জ Ghidra দিয়ে","https://play.picoctf.org/practice"]]]
+ ]},
+ {t:"Bug Bounty",d:"আসল কোম্পানিতে অনুমতি নিয়ে বাগ খুঁজে রিপোর্ট আর আয়",days:[
+  ["নিয়ম আর Scope","কোথায় টেস্ট করা বৈধ",[
+   ["HackerOne-এর Disclosure Guidelines পড়ো","https://www.hackerone.com/disclosure-guidelines"],
+   ["HackerOne, Bugcrowd, Intigriti-তে হ্যাকার অ্যাকাউন্ট খোলো","https://hackerone.com/users/sign_up"],
+   ["নোটে লিখো: in-scope, out-of-scope, safe harbor মানে কী"]]],
+  ["রিপোর্ট পড়া","অন্যরা কী বাগ পেয়ে টাকা পেয়েছে",[
+   ["HackerOne Hacktivity থেকে IDOR আর XSS-এর ৫টা disclosed রিপোর্ট পড়ো","https://hackerone.com/hacktivity"],
+   ["প্রতিটা রিপোর্টে কোন ধাপে বাগ পেল সেটা লিখো"]]],
+  ["প্রোগ্রাম বাছাই","নতুনদের জন্য সহজ টার্গেট",[
+   ["HackerOne directory থেকে wide scope-এর একটা VDP/নতুন প্রোগ্রাম বাছো","https://hackerone.com/directory/programs"],
+   ["প্রোগ্রামের পুরো policy পড়ো, scope স্ক্রিনশট রাখো"],
+   ["শুধু in-scope ডোমেইনে subfinder + httpx দিয়ে recon করো"]]],
+  ["অ্যাপ ম্যাপিং","টার্গেট বোঝা",[
+   ["Burp চালু রেখে টার্গেট অ্যাপের সব ফিচার ব্যবহার করো"],
+   ["সব endpoint আর parameter-এর তালিকা বানাও"],
+   ["কোন জায়গায় IDOR/XSS/access control বাগ থাকতে পারে চিহ্নিত করো"]]],
+  ["হান্টিং ১","IDOR ও Access Control",[
+   ["দুইটা টেস্ট অ্যাকাউন্ট খুলে একটার ID দিয়ে অন্যটার ডেটা চেষ্টা করো"],
+   ["Policy-তে rate limit থাকলে মেনে চলো, automated scan নিষেধ থাকলে চালাবে না"]]],
+  ["হান্টিং ২","Input-ভিত্তিক বাগ",[
+   ["সব input-এ XSS আর SSTI চেনার payload ট্রাই করো"],
+   ["File upload, export, webhook ফিচার থাকলে SSRF/upload চেক করো"]]],
+  ["প্রথম রিপোর্ট","পরিষ্কার রিপোর্টই টাকা আনে",[
+   ["কিছু পেলে রিপোর্ট লিখো: summary, steps, impact, PoC স্ক্রিনশট"],
+   ["না পেলে হতাশ হবে না: আরেকটা প্রোগ্রাম বাছো, আর PortSwigger-এর Practitioner ল্যাব শুরু করো","https://portswigger.net/web-security/all-labs"],
+   ["এখান থেকে নিয়ম: সপ্তাহে ৩ দিন হান্টিং, ২ দিন নতুন ল্যাব"]]]
+ ]}
+];
+const DAYS=[];PHASES.forEach((p,pi)=>p.days.forEach(d=>DAYS.push({pi,title:d[0],goal:d[1],tasks:d[2],id:"d"+(DAYS.length+1)})));
+DAYS.forEach((d,i)=>{d.n=i+1;});
+const TOTAL_TASKS=DAYS.reduce((a,d)=>a+d.tasks.length,0);
+document.getElementById("sDays").textContent="0/"+DAYS.length;
+
+/* ---------- Dates ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=s=>{const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c);};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ymd(d);};
+const todayStr=()=>ymd(new Date());
+const BN_DOW=["রবি","সোম","মঙ্গল","বুধ","বৃহঃ","শুক্র","শনি"];
+const fmtShort=s=>s?parse(s).toLocaleDateString("bn-BD",{day:"numeric",month:"short"}):"শুরু হয়নি";
+const fmtLong=s=>s?parse(s).toLocaleDateString("bn-BD",{weekday:"long",day:"numeric",month:"long"}):"শুরু করলে তারিখ বসবে";
+let peek=false;
+
+/* ---------- State ---------- */
+let LS="cubra-hacklog-v2";
+const freshState=()=>({start:null,rest:[],done:{},completedOn:{}});
+let state=freshState();
+try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s&&s.start)state=Object.assign(state,s);}catch(e){}
+let selected=null,viewMonth=null,dbRef=null,saveTimer=null,lastSaved="";
+
+const isRest=s=>state.rest.includes(parse(s).getDay());
+const nextStudy=s=>{let c=s;for(let i=0;i<8&&isRest(c);i++)c=addDays(c,1);return c;};
+const dayDoneCount=d=>d.tasks.reduce((a,_,i)=>a+(state.done[d.id+"-"+i]?1:0),0);
+const isDayDone=d=>!!state.completedOn[d.id];
+
+function schedule(){
+  const t=todayStr(),map={};
+  if(!state.start)return map;
+  let cursor=nextStudy(state.start>t?state.start:t);
+  const doneToday=Object.values(state.completedOn).includes(t);
+  let first=true;
+  for(const d of DAYS){
+    if(isDayDone(d)){map[d.id]=state.completedOn[d.id];continue;}
+    if(first&&doneToday&&cursor===t&&dayDoneCount(d)===0)cursor=nextStudy(addDays(t,1));
+    first=false;
+    map[d.id]=cursor;cursor=nextStudy(addDays(cursor,1));
+  }
+  return map;
+}
+const currentDay=()=>DAYS.find(d=>!isDayDone(d))||null;
+
+/* ---------- Render ---------- */
+const el=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="class")e.className=v;else if(k==="html")e.innerHTML=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}kids.flat().forEach(k=>k!=null&&e.append(k));return e;};
+const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--surface)"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+
+function render(){
+  const sched=schedule(),cur=currentDay();
+  if(!selected||!DAYS.find(d=>d.id===selected))selected=cur?cur.id:DAYS[DAYS.length-1].id;
+  const doneDays=DAYS.filter(isDayDone).length,doneTasks=Object.values(state.done).filter(Boolean).length;
+  document.getElementById("sDays").textContent=doneDays+"/"+DAYS.length;
+  const pct=Math.round(doneTasks/TOTAL_TASKS*100);
+  document.getElementById("sTasks").textContent=pct+"%";
+  document.getElementById("sBar").style.width=pct+"%";
+  document.getElementById("sEta").textContent=state.start?fmtShort(sched[DAYS[DAYS.length-1].id]):"—";
+  if(!state.start&&!peek)renderWelcome();else renderDay(sched,cur);renderCal(sched,cur);renderPhases(sched,cur);renderSettings();
+}
+
+function startOn(s){peek=false;state.start=s;state.completedOn={};state.done={};selected=null;viewMonth=null;commit();toast("শুরু হলো! Day 1: "+DAYS[0].title+" · "+fmtShort(nextStudy(s)));}
+function renderWelcome(){
+  const panel=document.getElementById("dayPanel");
+  const inp=el("input",{type:"date",id:"welcomeDate",value:todayStr(),style:"font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)"});
+  panel.replaceChildren(
+    el("div",{class:"label"},"এখনো শুরু হয়নি"),
+    el("h2",{style:"font-size:22px;margin-top:4px"},"যেদিন তুমি রেডি, সেদিন Day 1"),
+    el("p",{class:"goal"},"শুরু করো চাপলে ওই তারিখে Day 1 বসবে। এরপর প্রতিদিন যেদিন কাজ করবে সেদিনের কাজ দেখাবে। কোনো দিন কাজ না করলে কিছু হারাবে না, বাকি দিনগুলো সামনে সরে যাবে।"),
+    el("div",{style:"display:flex;gap:10px;flex-wrap:wrap;align-items:center"},
+      el("button",{class:"btn primary",onclick:()=>startOn(todayStr())},"আজ থেকে শুরু করো"),
+      el("span",{style:"color:var(--muted);font-size:13px"},"অথবা অন্য তারিখ:"),inp,
+      el("button",{class:"btn",onclick:()=>{if(inp.value)startOn(inp.value);}},"এই তারিখ থেকে")),
+    el("p",{style:"margin-top:18px;font-size:13px;color:var(--muted)"},"Day 1 কী আছে দেখতে নিচের রোডম্যাপে ক্লিক করো।"));
+}
+function renderDay(sched,cur){
+  const d=DAYS.find(x=>x.id===selected),p=PHASES[d.pi],panel=document.getElementById("dayPanel");
+  const date=sched[d.id],t=todayStr();
+  let chip;
+  if(isDayDone(d))chip=el("span",{class:"chip done"},"✓ শেষ · "+fmtShort(state.completedOn[d.id]));
+  else if(cur&&cur.id===d.id)chip=el("span",{class:"chip today"},date===t?"আজকের কাজ":"পরের কাজ · "+fmtShort(date));
+  else chip=el("span",{class:"chip"},"নির্ধারিত · "+fmtShort(date));
+  const list=el("ul",{class:"tasks"});
+  d.tasks.forEach((tk,i)=>{
+    const key=d.id+"-"+i,on=!!state.done[key];
+    const text=el("div",{class:"ttext"},el("span",{class:"tid"},"D"+d.n+"."+(i+1)),el("span",{html:tk[0]}));
+    if(tk[1])text.append(el("br"),el("a",{class:"go",href:tk[1],target:"_blank",rel:"noopener"},"↗ "+tk[1].replace(/^https?:\/\/(www\.)?/,"").slice(0,60)));
+    const cb=el("button",{class:"cb","aria-pressed":String(on),"aria-label":"টিক দাও: D"+d.n+"."+(i+1),html:CHECK,onclick:()=>toggle(d,i)});
+    list.append(el("li",{class:"task"+(on?" checked":"")},cb,text));
+  });
+  const idx=DAYS.indexOf(d);
+  const foot=el("div",{class:"dayfoot"},
+    el("div",{style:"display:flex;gap:8px"},
+      el("button",{class:"btn",onclick:()=>{selected=DAYS[idx-1].id;render();},...(idx===0?{disabled:""}:{})},"‹ আগের দিন"),
+      el("button",{class:"btn",onclick:()=>{selected=DAYS[idx+1].id;render();},...(idx===DAYS.length-1?{disabled:""}:{})},"পরের দিন ›")),
+    cur&&cur.id!==d.id?el("button",{class:"btn primary",onclick:()=>{selected=cur.id;render();}},"চলমান দিনে যাও"):el("span",{class:"mono",style:"font-size:12px;color:var(--muted)"},dayDoneCount(d)+"/"+d.tasks.length+" টাস্ক"));
+  panel.replaceChildren(
+    el("div",{class:"dayhead"},el("div",{},el("div",{class:"label"},"Day "+d.n+" · ফেজ "+(d.pi+1)+": "+p.t),el("h2",{},d.title)),chip),
+    el("p",{class:"goal"},d.goal+" · "+fmtLong(date)),list,foot);
+}
+
+function renderCal(sched,cur){
+  const t=todayStr();
+  if(!viewMonth){const s=sched[selected]||t;viewMonth=s.slice(0,7);}
+  const [y,m]=viewMonth.split("-").map(Number),first=new Date(y,m-1,1);
+  document.getElementById("mTitle").textContent=first.toLocaleDateString("bn-BD",{month:"long",year:"numeric"});
+  const byDate={};for(const d of DAYS){(byDate[sched[d.id]]=byDate[sched[d.id]]||[]).push(d);}
+  const cal=document.getElementById("cal");cal.replaceChildren();
+  BN_DOW.forEach(w=>cal.append(el("div",{class:"dow"},w)));
+  const startCell=new Date(y,m-1,1-first.getDay());
+  for(let i=0;i<42;i++){
+    const dt=new Date(startCell);dt.setDate(startCell.getDate()+i);const s=ymd(dt);
+    if(i>=35&&dt.getMonth()!==m-1)break;
+    const ds=byDate[s]||[];
+    const cls=["cell"];if(dt.getMonth()!==m-1)cls.push("out");if(isRest(s)&&!ds.length)cls.push("rest");if(s===t)cls.push("isToday");if(ds.some(d=>d.id===selected))cls.push("sel");
+    const cell=el(ds.length?"button":"div",{class:cls.join(" ")},el("span",{class:"n"},String(dt.getDate())));
+    ds.forEach(d=>cell.append(el("span",{class:"dtag"+(isDayDone(d)?" done":cur&&cur.id===d.id?" cur":"")},(isDayDone(d)?"✓ ":"")+"D"+d.n)));
+    if(ds.length){cell.setAttribute("aria-label",fmtLong(s)+": Day "+ds.map(d=>d.n).join(", "));cell.addEventListener("click",()=>{selected=ds[ds.length-1].id;render();});}
+    cal.append(cell);
+  }
+}
+
+function renderPhases(sched,cur){
+  const box=document.getElementById("phases");
+  const openState={};box.querySelectorAll("details").forEach(dt=>openState[dt.dataset.pi]=dt.open);
+  box.replaceChildren(el("h2",{style:"font-size:19px"},"পুরো রোডম্যাপ"));
+  PHASES.forEach((p,pi)=>{
+    const ds=DAYS.filter(d=>d.pi===pi),dn=ds.filter(isDayDone).length;
+    const isCur=cur&&cur.pi===pi;
+    const det=el("details",{class:"phase","data-pi":String(pi)});
+    det.open=pi in openState?openState[pi]:isCur;
+    det.append(el("summary",{},el("span",{class:"pnum"},"P"+(pi+1)),el("div",{class:"pt"},el("h3",{},p.t),el("p",{},p.d)),el("span",{class:"pprog"},dn===ds.length?"✓ সম্পূর্ণ":dn+"/"+ds.length+" দিন")));
+    const grid=el("div",{class:"daylist"});
+    ds.forEach(d=>{
+      const st=isDayDone(d)?"done":cur&&cur.id===d.id?"cur":"";
+      grid.append(el("button",{class:"dl "+st,onclick:()=>{selected=d.id;viewMonth=null;peek=true;render();window.scrollTo({top:0,behavior:"smooth"});}},
+        el("div",{class:"top"},el("span",{},"Day "+d.n),el("span",{},isDayDone(d)?"✓ "+fmtShort(state.completedOn[d.id]):fmtShort(sched[d.id]))),
+        el("b",{},d.title),el("span",{style:"font-size:12.5px;color:var(--muted)"},dayDoneCount(d)+"/"+d.tasks.length+" টাস্ক")));
+    });
+    det.append(grid);box.append(det);
+  });
+}
+
+function renderSettings(){
+  const sd=document.getElementById("startDate");if(document.activeElement!==sd)sd.value=state.start;
+  const rd=document.getElementById("restDays");rd.replaceChildren();
+  BN_DOW.forEach((w,i)=>rd.append(el("button",{"aria-pressed":String(state.rest.includes(i)),onclick:()=>{
+    state.rest=state.rest.includes(i)?state.rest.filter(x=>x!==i):[...state.rest,i];
+    if(state.rest.length>=7)state.rest=state.rest.filter(x=>x!==i);
+    viewMonth=null;commit();}},w)));
+}
+
+/* ---------- Actions ---------- */
+let toastT;
+function toast(msg){document.querySelector(".toast")?.remove();const t=el("div",{class:"toast",role:"status"},msg);document.body.append(t);clearTimeout(toastT);toastT=setTimeout(()=>t.remove(),3500);}
+
+function toggle(d,i){
+  const key=d.id+"-"+i;
+  if(!state.start)state.start=todayStr();
+  if(state.done[key])delete state.done[key];else state.done[key]=true;
+  const all=dayDoneCount(d)===d.tasks.length;
+  if(all&&!isDayDone(d)){
+    state.completedOn[d.id]=todayStr();
+    const nx=currentDay();
+    if(nx){const sc=schedule();toast("Day "+d.n+" শেষ ✓  পরের কাজ: Day "+nx.n+" · "+nx.title+" ("+fmtShort(sc[nx.id])+")");selected=nx.id;viewMonth=null;}
+    else toast("পুরো রোডম্যাপ শেষ! এখন নিয়মিত bug bounty চালিয়ে যাও।");
+  }else if(!all&&isDayDone(d)){delete state.completedOn[d.id];}
+  commit();
+}
+
+function commit(){
+  try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}
+  render();
+  if(dbRef){clearTimeout(saveTimer);saveTimer=setTimeout(saveRemote,700);}
+}
+let saving=false,pending=false;
+async function saveRemote(){
+  if(saving){pending=true;return;}
+  const body=JSON.stringify(state);if(body===lastSaved)return;
+  saving=true;
+  try{await dbRef.set(JSON.parse(body));lastSaved=body;setSync("ক্লাউডে সেভ হয়েছে · যেকোনো ডিভাইস থেকে দেখতে পারবে");}
+  catch(e){setSync("ক্লাউডে সেভ হয়নি, এই ব্রাউজারে সেভ আছে");}
+  saving=false;if(pending){pending=false;saveRemote();}
+}
+const setSync=t=>document.getElementById("sync").textContent=t;
+
+document.getElementById("startDate").addEventListener("change",e=>{if(e.target.value){state.start=e.target.value;viewMonth=null;commit();}});
+document.getElementById("prevM").addEventListener("click",()=>{const[y,m]=viewMonth.split("-").map(Number);const d=new Date(y,m-2,1);viewMonth=d.getFullYear()+"-"+pad(d.getMonth()+1);render();});
+document.getElementById("nextM").addEventListener("click",()=>{const[y,m]=viewMonth.split("-").map(Number);const d=new Date(y,m,1);viewMonth=d.getFullYear()+"-"+pad(d.getMonth()+1);render();});
+
+render();
+
+
+/* ---------- Accounts & sync (standalone site) ----------
+   Supabase-এর URL আর anon key বসালে অনলাইন অ্যাকাউন্ট চালু হবে (যেকোনো ডিভাইস থেকে লগইন)।
+   খালি রাখলে "লোকাল মোড": অ্যাকাউন্ট শুধু ওই ব্রাউজারে থাকবে। */
+const SUPABASE_URL="";
+const SUPABASE_ANON_KEY="";
+
+const ONLINE=!!(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase);
+const sb=ONLINE?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+const EMAIL_DOMAIN="@hacklog.example.com";
+const USER_RE=/^[a-z0-9_]{3,20}$/;
+let me=null,authMode="login";
+
+const $=id=>document.getElementById(id);
+function showApp(on){$("auth").hidden=on;document.querySelector(".wrap").hidden=!on;}
+function authMsg(t){$("authMsg").textContent=t;}
+function setTab(m){authMode=m;$("tabLogin").setAttribute("aria-selected",String(m==="login"));$("tabSignup").setAttribute("aria-selected",String(m==="signup"));
+  $("authBtn").textContent=m==="login"?"লগইন":"অ্যাকাউন্ট খোলো";$("uPass").autocomplete=m==="login"?"current-password":"new-password";authMsg("");}
+$("tabLogin").onclick=()=>setTab("login");$("tabSignup").onclick=()=>setTab("signup");
+$("modeNote").textContent=ONLINE?"অনলাইন অ্যাকাউন্ট: যেকোনো ডিভাইস থেকে লগইন করে নিজের প্রগ্রেস দেখতে পারবে।":"লোকাল মোড: অ্যাকাউন্ট আর প্রগ্রেস শুধু এই ব্রাউজারে থাকবে। অনলাইন অ্যাকাউন্টের জন্য README দেখো।";
+
+/* local mode helpers */
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+const lget=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
+const lset=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+
+async function afterLogin(username,userId){
+  me={username,userId};
+  LS="cubra-hacklog-v2:"+username;
+  state=Object.assign(freshState(),lget(LS,{}));
+  selected=null;viewMonth=null;peek=false;
+  $("whoName").textContent=username;
+  showApp(true);render();
+  if(ONLINE){
+    setSync("লোড হচ্ছে…");
+    const {data,error}=await sb.from("progress").select("state").eq("user_id",userId).maybeSingle();
+    if(error){setSync("সার্ভারে কানেক্ট হয়নি, এই ব্রাউজারে সেভ আছে");}
+    else{
+      if(data&&data.state){state=Object.assign(freshState(),data.state);lset(LS,state);lastSaved=JSON.stringify(state);render();}
+      dbRef={set:async obj=>{const {error}=await sb.from("progress").upsert({user_id:userId,username,state:obj,updated_at:new Date().toISOString()});if(error)throw error;}};
+      if(!data)saveRemote();
+      setSync("অনলাইনে সেভ হচ্ছে · যেকোনো ডিভাইস থেকে লগইন করে দেখতে পারবে");
+    }
+  }else setSync("লোকাল মোড: এই ব্রাউজারে সেভ হচ্ছে");
+}
+
+$("authForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const u=$("uName").value.trim().toLowerCase(),p=$("uPass").value;
+  if(!USER_RE.test(u))return authMsg("ইউজারনেম ৩-২০ অক্ষর, শুধু ছোট হাতের ইংরেজি, সংখ্যা আর _ চলবে।");
+  if(p.length<6)return authMsg("পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে।");
+  $("authBtn").disabled=true;authMsg("");
+  try{
+    if(ONLINE){
+      const email=u+EMAIL_DOMAIN;
+      if(authMode==="signup"){
+        const {data,error}=await sb.auth.signUp({email,password:p,options:{data:{username:u}}});
+        if(error)return authMsg(/registered|exists/i.test(error.message)?"এই ইউজারনেম আগেই নেওয়া। অন্যটা দাও বা লগইন করো।":"অ্যাকাউন্ট খোলা যায়নি: "+error.message);
+        if(!data.session)return authMsg("অ্যাকাউন্ট হয়েছে কিন্তু লগইন হয়নি। Supabase-এ Email confirmation বন্ধ আছে কিনা দেখো (README)।");
+        await afterLogin(u,data.user.id);
+      }else{
+        const {data,error}=await sb.auth.signInWithPassword({email,password:p});
+        if(error)return authMsg("ইউজারনেম বা পাসওয়ার্ড ভুল।");
+        await afterLogin(u,data.user.id);
+      }
+    }else{
+      const users=lget("hacklog-users",{});
+      if(authMode==="signup"){
+        if(users[u])return authMsg("এই ইউজারনেম আগেই নেওয়া। অন্যটা দাও বা লগইন করো।");
+        const salt=crypto.getRandomValues(new Uint32Array(4)).join("-");
+        users[u]={salt,hash:await sha(salt+p)};lset("hacklog-users",users);
+      }else{
+        if(!users[u]||users[u].hash!==await sha(users[u].salt+p))return authMsg("ইউজারনেম বা পাসওয়ার্ড ভুল।");
+      }
+      lset("hacklog-session",u);await afterLogin(u,u);
+    }
+    $("uPass").value="";
+  }finally{$("authBtn").disabled=false;}
+});
+
+$("logoutBtn").addEventListener("click",async()=>{
+  clearTimeout(saveTimer);if(dbRef)await saveRemote();
+  if(ONLINE)await sb.auth.signOut();else lset("hacklog-session",null);
+  me=null;dbRef=null;lastSaved="";state=freshState();showApp(false);setTab("login");
+});
+
+(async()=>{
+  if(ONLINE){
+    const {data}=await sb.auth.getSession();const s=data.session;
+    if(s){const u=(s.user.user_metadata&&s.user.user_metadata.username)||s.user.email.split("@")[0];return afterLogin(u,s.user.id);}
+  }else{const u=lget("hacklog-session",null);if(u&&lget("hacklog-users",{})[u])return afterLogin(u,u);}
+  showApp(false);
+})();
+</script>
+</body>
+</html>
