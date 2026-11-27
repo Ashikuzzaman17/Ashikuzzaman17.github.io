@@ -1,6 +1,6 @@
 # CuBra Hack Log
 
-A 53-day practical cyber security roadmap where every user logs in with their own username and password and sees only their own progress. The whole site is a single file: `index.html`.
+A 57-day zero-to-beginner cyber security roadmap. Every user logs in with their own username and password and sees only their own progress. `index.html` is the app and `roadmap.js` holds all the day-by-day content, so editing the roadmap means editing only `roadmap.js`.
 
 ## Two modes
 
